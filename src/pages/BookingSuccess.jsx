@@ -1,22 +1,30 @@
 
 import { Link } from "react-router-dom";
+import { CheckCircle } from "lucide-react";
 
 export default function BookingSuccess() {
+  const booking = JSON.parse(localStorage.getItem("lastBooking") || "null");
+
   return (
-    <main className="success-container">
-      <div className="success-card">
-        <div className="success-icon">✓</div>
-        <h1>Booking Successful!</h1>
-        <p>Your demo booking has been saved successfully.</p>
+    <main className="success-page">
+      <CheckCircle size={70} />
+      <p className="section-label">BOOKING CONFIRMED</p>
+      <h1>Your journey begins here!</h1>
+      <p>Your booking has been saved successfully.</p>
 
-        <Link to="/my-bookings" className="primary-btn">
-          View My Bookings
-        </Link>
+      {booking && (
+        <div className="success-card">
+          <h3>{booking.carName}</h3>
+          <p>Pickup: {booking.pickup}</p>
+          <p>Return: {booking.dropoff}</p>
+          <p>Duration: {booking.days} day(s)</p>
+          <h2>₹{booking.total.toLocaleString("en-IN")}</h2>
+          <p>Booking ID: {booking.id}</p>
+        </div>
+      )}
 
-        <Link to="/cars" className="secondary-btn">
-          Explore More Cars
-        </Link>
-      </div>
+      <Link to="/my-bookings" className="primary-button">View My Bookings</Link>
+      <Link to="/cars" className="text-link">Continue Exploring Cars →</Link>
     </main>
   );
 }

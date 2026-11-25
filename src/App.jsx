@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -14,9 +14,12 @@ import MyBookings from "./pages/MyBookings";
 import Admin from "./pages/Admin";
 
 export default function App() {
+  const location = useLocation();
+  const isAuthPage = ["/login", "/register"].includes(location.pathname);
+
   return (
     <>
-      <Navbar />
+      {!isAuthPage && <Navbar />}
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -28,9 +31,10 @@ export default function App() {
         <Route path="/booking-success" element={<BookingSuccess />} />
         <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="*" element={<h2 className="not-found">404 - Page not found</h2>} />
       </Routes>
 
-      <Footer />
+      {!isAuthPage && <Footer />}
     </>
   );
 }

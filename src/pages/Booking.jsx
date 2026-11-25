@@ -1,130 +1,121 @@
 
-import { useState } from "react";
-import { useNavigate, useParams, Navigate } from "react-router-dom";
-import { initialCars } from "../data";
+import { useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getCars } from "../data";
+import Coupon from "../components/Coupon";
 
 export default function Booking() {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const car = initialCars.find(item => item.id === Number(id));
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const car = getCars().find((item) => String(item.id) === id);
 
   const [pickup, setPickup] = useState("");
-  const [returnDate, setReturnDate] = useState("");
+  const [dropoff, setDropoff] = useState("");
   const [location, setLocation] = useState("");
-  const [payment, setPayment] = useState("Demo UPI");
+  const [payment, setPayment] = useState("UPI");
+  const [discount, setDiscount] = useState(0);
+  const [error, setError] = useState("");
 
-  if (!user) return <Navigate to="/login" />;
-  if (!car) return <Navigate to="/cars" />;
+  const days = useMemo(() => {
+    if (!pickup || !dropoff) return 0;
+    const start = new Date(`${pickup}T00:00:00`);
+    const end = new Date(`${dropoff}T00:00:00`);
+    return Math.max(0, Math.ceil((end - start) / 86400000));
+  }, [pickup, dropoff]);
 
-  const today = new Date().toISOString().split("T")[0];
+  if (!car) return <div className="empty-state">Car not found. <Link to="/cars">Browse cars</Link></div>;
 
-  const days = pickup && returnDate
-    ? Math.max(
-        0,
-        Math.ceil(
-          (new Date(returnDate) - new Date(pickup)) /
-          (1000 * 60 * 60 * 24)
-        )
-      )
-    : 0;
+  const subtotal = days * car.price;
+  const total = subtotal - Math.round(subtotal * discount / 100);
 
-  const total = days * car.price;
-
-  function handleBooking(e) {
+  function confirmBooking(e) {
     e.preventDefault();
+    setError("");
 
-    if (!pickup || !returnDate || !location) {
-      alert("Please fill all booking details.");
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+
+    if (!user) {
+      navigate("/login");
       return;
     }
 
-    if (pickup < today || returnDate <= pickup) {
-      alert("Please choose valid pickup and return dates.");
+    if (!pickup || !dropoff || days < 1 || !location.trim()) {
+      setError("Please select valid dates and enter your pickup location.");
       return;
     }
 
-    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
-
-    const newBooking = {
+    const booking = {
       id: Date.now(),
       carId: car.id,
       carName: car.name,
-      image: car.image,
-      email: user.email,
-      customerName: user.name,
+      carImage: car.image,
+      price: car.price,
       pickup,
-      returnDate,
-      location,
+      dropoff,
       days,
-      total,
+      location,
       payment,
+      discount,
+      total,
+      userEmail: user.email,
       status: "Confirmed",
       createdAt: new Date().toISOString()
     };
 
-    bookings.push(newBooking);
+    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    bookings.push(booking);
     localStorage.setItem("bookings", JSON.stringify(bookings));
+    localStorage.setItem("lastBooking", JSON.stringify(booking));
 
     navigate("/booking-success");
   }
 
   return (
-    <main className="auth-container">
-      <form className="booking-card" onSubmit={handleBooking}>
-        <span className="eyebrow">RESERVE YOUR RIDE</span>
-        <h1>Book {car.name}</h1>
+    <main className="booking-page">
+      <div className="page-heading">
+        <p className="section-label">RESERVE YOUR RIDE</p>
+        <h1>Complete Your Booking</h1>
+        <p>You're one step away from your next journey.</p>
+      </div>
 
-        <img className="booking-image" src={car.image} alt={car.name} />
+      <div className="booking-layout">
+        <form className="booking-form" onSubmit={confirmBooking}>
+          <h2>Booking Details</h2>
 
-        <label>Pickup Date</label>
-        <input
-          type="date"
-          min={today}
-          value={pickup}
-          onChange={e => setPickup(e.target.value)}
-          required
-        />
+          <label>Pickup Date</label>
+          <input type="date" value={pickup} min={new Date().toISOString().split("T")[0]} onChange={(e) => setPickup(e.target.value)} required />
 
-        <label>Return Date</label>
-        <input
-          type="date"
-          min={pickup || today}
-          value={returnDate}
-          onChange={e => setReturnDate(e.target.value)}
-          required
-        />
+          <label>Return Date</label>
+          <input type="date" value={dropoff} min={pickup || new Date().toISOString().split("T")[0]} onChange={(e) => setDropoff(e.target.value)} required />
 
-        <label>Pickup Location</label>
-        <input
-          placeholder="Enter pickup location"
-          value={location}
-          onChange={e => setLocation(e.target.value)}
-          required
-        />
+          <label>Pickup Location</label>
+          <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Enter pickup location" required />
 
-        <label>Demo Payment Method</label>
-        <select value={payment} onChange={e => setPayment(e.target.value)}>
-          <option>Demo UPI</option>
-          <option>Demo Card</option>
-          <option>Pay at Pickup (Demo)</option>
-        </select>
+          <label>Payment Method</label>
+          <select value={payment} onChange={(e) => setPayment(e.target.value)}>
+            <option>UPI</option>
+            <option>Credit / Debit Card (Demo)</option>
+            <option>Pay at Pickup</option>
+          </select>
 
-        <div className="price-summary">
-          <p>Price per day: ₹{car.price}</p>
-          <p>Rental days: {days}</p>
-          <h2>Total: ₹{total}</h2>
-        </div>
+          <Coupon onApply={setDiscount} />
 
-        <button className="primary-btn full-btn" type="submit">
-          Confirm Demo Booking
-        </button>
+          {error && <p className="auth-error">{error}</p>}
 
-        <p className="demo-note">
-          Demo only. No actual payment will be collected.
-        </p>
-      </form>
+          <button className="primary-button" type="submit">Confirm Booking</button>
+        </form>
+
+        <aside className="booking-summary">
+          <img src={car.image} alt={car.name} />
+          <h2>{car.name}</h2>
+          <p>₹{car.price.toLocaleString("en-IN")} / day</p>
+          <div className="summary-line"><span>Rental days</span><b>{days}</b></div>
+          <div className="summary-line"><span>Subtotal</span><b>₹{subtotal.toLocaleString("en-IN")}</b></div>
+          <div className="summary-line"><span>Discount</span><b>{discount}%</b></div>
+          <div className="summary-total"><span>Total</span><strong>₹{total.toLocaleString("en-IN")}</strong></div>
+          <small>Demo payment only. No real payment is processed.</small>
+        </aside>
+      </div>
     </main>
   );
 }

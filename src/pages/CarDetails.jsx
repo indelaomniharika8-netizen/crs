@@ -1,36 +1,50 @@
 
-import { useParams, Link, Navigate } from "react-router-dom";
-import { initialCars } from "../data";
+import { Link, useParams } from "react-router-dom";
+import { Users, Settings2, Fuel, Star, ArrowLeft } from "lucide-react";
+import { getCars } from "../data";
+import { addRecentlyViewed } from "../utils/recentlyViewed";
+import Reviews from "../components/Reviews";
 
 export default function CarDetails() {
   const { id } = useParams();
+  const car = getCars().find((item) => String(item.id) === id);
 
-  const car = initialCars.find(item => item.id === Number(id));
+  if (!car) {
+    return <div className="empty-state">Car not found. <Link to="/cars">Back to cars</Link></div>;
+  }
 
-  if (!car) return <Navigate to="/cars" />;
+  addRecentlyViewed(car);
 
   return (
-    <main className="details-container">
-      <img src={car.image} alt={car.name} />
+    <main className="details-page">
+      <Link to="/cars" className="back-link"><ArrowLeft size={17} /> Back to Cars</Link>
 
-      <div className="details-content">
-        <span className="category">{car.category}</span>
-        <h1>{car.name}</h1>
-        <p>{car.description}</p>
-
-        <div className="details-grid">
-          <p><strong>Year:</strong> {car.year}</p>
-          <p><strong>Seats:</strong> {car.seats}</p>
-          <p><strong>Fuel:</strong> {car.fuel}</p>
-          <p><strong>Transmission:</strong> {car.transmission}</p>
+      <div className="details-layout">
+        <div className="details-image">
+          <img src={car.image} alt={car.name} />
         </div>
 
-        <h2>₹{car.price} / day</h2>
+        <div className="details-info">
+          <p className="section-label">DRIVEON COLLECTION</p>
+          <h1>{car.name}</h1>
+          <p className="details-rating"><Star size={17} fill="currentColor" /> {car.rating} Customer Rating</p>
+          <p className="details-description">{car.description}</p>
 
-        <Link to={`/booking/${car.id}`} className="primary-btn">
-          Book This Car
-        </Link>
+          <div className="details-specs">
+            <span><Users /> {car.seats} Seats</span>
+            <span><Settings2 /> {car.transmission}</span>
+            <span><Fuel /> {car.fuel}</span>
+          </div>
+
+          <div className="details-price">
+            <strong>₹{car.price.toLocaleString("en-IN")}</strong> / day
+          </div>
+
+          <Link to={`/booking/${car.id}`} className="book-button">Book This Car</Link>
+        </div>
       </div>
+
+      <Reviews carId={car.id} />
     </main>
   );
 }

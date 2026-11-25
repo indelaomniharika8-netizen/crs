@@ -2,74 +2,87 @@
 export const initialCars = [
   {
     id: 1,
-    name: "BMW 3 Series",
-    category: "Luxury",
-    price: 4500,
-    seats: 5,
-    fuel: "Petrol",
+    name: "Toyota Fortuner",
+    brand: "Toyota",
+    category: "SUV",
+    price: 4000,
+    seats: 7,
     transmission: "Automatic",
-    year: 2025,
-    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=900",
-    description: "Experience comfort and performance with this premium BMW."
+    fuel: "Diesel",
+    rating: 4.9,
+    image: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=1000",
+    description: "A powerful and comfortable SUV for family trips and long journeys."
   },
   {
     id: 2,
-    name: "Mercedes-Benz C-Class",
+    name: "BMW 5 Series",
+    brand: "BMW",
     category: "Luxury",
-    price: 5000,
+    price: 6500,
     seats: 5,
-    fuel: "Petrol",
     transmission: "Automatic",
-    year: 2025,
-    image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=900",
-    description: "A stylish luxury sedan for comfortable journeys."
+    fuel: "Petrol",
+    rating: 4.8,
+    image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=1000",
+    description: "Experience premium comfort and elegant performance."
   },
   {
     id: 3,
     name: "Hyundai Creta",
+    brand: "Hyundai",
     category: "SUV",
-    price: 2500,
+    price: 2800,
     seats: 5,
-    fuel: "Diesel",
-    transmission: "Manual",
-    year: 2024,
-    image: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=900",
-    description: "A spacious SUV suitable for family trips."
+    transmission: "Automatic",
+    fuel: "Petrol",
+    rating: 4.7,
+    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=1000",
+    description: "A stylish SUV with comfort and practical features."
   },
   {
     id: 4,
-    name: "Toyota Fortuner",
-    category: "SUV",
-    price: 4000,
-    seats: 7,
-    fuel: "Diesel",
+    name: "Mercedes Benz C-Class",
+    brand: "Mercedes",
+    category: "Luxury",
+    price: 7500,
+    seats: 5,
     transmission: "Automatic",
-    year: 2025,
-    image: "https://images.unsplash.com/photo-151 SUV",
-    description: "A powerful SUV for long journeys."
+    fuel: "Petrol",
+    rating: 4.9,
+    image: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=1000",
+    description: "Enjoy an elegant luxury driving experience."
   },
   {
     id: 5,
     name: "Honda City",
+    brand: "Honda",
     category: "Sedan",
-    price: 1800,
+    price: 2200,
     seats: 5,
-    fuel: "Petrol",
     transmission: "Manual",
-    year: 2024,
-    image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=900",
-    description: "A comfortable and practical sedan."
+    fuel: "Petrol",
+    rating: 4.6,
+    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1000",
+    description: "A comfortable sedan for everyday travel."
   },
   {
     id: 6,
-    name: "Maruti Swift",
-    category: "Hatchback",
-    price: 1200,
-    seats: 5,
-    fuel: "Petrol",
+    name: "Mahindra Thar",
+    brand: "Mahindra",
+    category: "SUV",
+    price: 3500,
+    seats: 4,
     transmission: "Manual",
-    year: 2024,
-    image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=900",
-    description: "A compact car for everyday city travel."
+    fuel: "Diesel",
+    rating: 4.8,
+    image: "https://images.unsplash.com/photo-1519245659620-e859806a8d3b?w=1000",
+    description: "A bold SUV for exciting road adventures."
   }
 ];
+
+export function getCars() {
+  return [
+    ...initialCars,
+    ...JSON.parse(localStorage.getItem("extraCars") || "[]")
+  ];
+}

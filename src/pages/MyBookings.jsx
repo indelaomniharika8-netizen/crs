@@ -1,72 +1,57 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function MyBookings() {
   const user = JSON.parse(localStorage.getItem("user") || "null");
-  const [bookings, setBookings] = useState([]);
 
-  useEffect(() => {
-    const allBookings = JSON.parse(localStorage.getItem("bookings") || "[]");
-
-    setBookings(
-      allBookings.filter(item => item.email === user?.email)
-    );
-  }, [user?.email]);
+  const [bookings, setBookings] = useState(() => {
+    const all = JSON.parse(localStorage.getItem("bookings") || "[]");
+    return user ? all.filter((b) => b.userEmail === user.email) : [];
+  });
 
   function cancelBooking(id) {
-    const updated = bookings.map(item =>
-      item.id === id ? { ...item, status: "Cancelled" } : item
-    );
+    const updatedAll = JSON.parse(localStorage.getItem("bookings") || "[]")
+      .map((b) => b.id === id ? { ...b, status: "Cancelled" } : b);
 
-    const allBookings = JSON.parse(localStorage.getItem("bookings") || "[]");
+    localStorage.setItem("bookings", JSON.stringify(updatedAll));
+    setBookings(updatedAll.filter((b) => b.userEmail === user.email));
+  }
 
-    const newAllBookings = allBookings.map(item =>
-      item.id === id ? { ...item, status: "Cancelled" } : item
-    );
-
-    localStorage.setItem("bookings", JSON.stringify(newAllBookings));
-    setBookings(updated);
+  if (!user) {
+    return <main className="empty-state"><h2>Please login to view bookings.</h2><Link to="/login">Login</Link></main>;
   }
 
   return (
-    <main className="page-container">
+    <main className="my-bookings-page">
       <div className="page-heading">
-        <span className="eyebrow">YOUR ACCOUNT</span>
+        <p className="section-label">YOUR JOURNEYS</p>
         <h1>My Bookings</h1>
-        <p>Manage your car reservations.</p>
+        <p>Manage and view your reservations.</p>
       </div>
 
       {bookings.length === 0 ? (
-        <div className="empty-message">
+        <div className="empty-state">
           <h2>No bookings yet</h2>
-          <p>Your bookings will appear here.</p>
+          <p>Find a car for your next journey.</p>
+          <Link to="/cars" className="primary-button">Explore Cars</Link>
         </div>
       ) : (
         <div className="booking-list">
-          {bookings.map(item => (
-            <div className="booking-item" key={item.id}>
-              <img src={item.image} alt={item.carName} />
-
-              <div className="booking-info">
-                <h3>{item.carName}</h3>
-                <p>Pickup: {item.pickup}</p>
-                <p>Return: {item.returnDate}</p>
-                <p>Location: {item.location}</p>
-                <p>Total: ₹{item.total}</p>
-                <span className={item.status === "Cancelled" ? "status cancelled" : "status"}>
-                  {item.status}
-                </span>
+          {bookings.map((b) => (
+            <article className="booking-card" key={b.id}>
+              <img src={b.carImage} alt={b.carName} />
+              <div className="booking-card-info">
+                <h3>{b.carName}</h3>
+                <p>{b.pickup} to {b.dropoff}</p>
+                <p>{b.days} day(s) · {b.location}</p>
+                <strong>₹{b.total.toLocaleString("en-IN")}</strong>
+                <span className={b.status === "Cancelled" ? "status cancelled" : "status"}>{b.status}</span>
               </div>
-
-              {item.status !== "Cancelled" && (
-                <button
-                  className="outline-btn"
-                  onClick={() => cancelBooking(item.id)}
-                >
-                  Cancel Booking
-                </button>
+              {b.status !== "Cancelled" && (
+                <button className="cancel-button" onClick={() => cancelBooking(b.id)}>Cancel Booking</button>
               )}
-            </div>
+            </article>
           ))}
         </div>
       )}
